@@ -31,11 +31,11 @@ func init() {
 	mongoConfig.MongoURI = os.Getenv("MONGODB_URI")
 	mongoConfig.DbName = os.Getenv("DATABASE_NAME")
 
-	client, err := database.NewMongoClient(ctx, mongoConfig.MongoURI, logger)
+	client, err := database.NewMongoClient(ctx, "mongodb+srv://rishishah545:rE0VFrEmuqN0WSbc@auction.xtxvgwg.mongodb.net/test", logger)
 	if err != nil {
 		logger.Error("failed to create mongo client", zap.Any(constants.Err, err))
 	}
-	db := client.Database(mongoConfig.DbName)
+	db := client.Database("test")
 
 	router := router.NewGinRouter(logger, db)
 	Router = router
