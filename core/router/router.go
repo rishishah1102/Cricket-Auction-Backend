@@ -18,7 +18,7 @@ func NewGinRouter(logger *zap.Logger, db *mongo.Database) (router *gin.Engine) {
 	router.Use(gin.Recovery())
 	router.Use(middlewares.CORSMiddleware)
 
-	router.GET("/health", func(c *gin.Context) {
+	router.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Welcome to Auction Server",
 		})
