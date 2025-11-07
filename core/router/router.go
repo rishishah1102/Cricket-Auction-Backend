@@ -2,7 +2,9 @@ package router
 
 import (
 	auth "cric-auction-monolith/controllers/auth"
+	auction "cric-auction-monolith/controllers/auction"
 	profile "cric-auction-monolith/controllers/profile"
+	players "cric-auction-monolith/controllers/player"
 	"cric-auction-monolith/pkg/middlewares"
 	"net/http"
 
@@ -41,6 +43,40 @@ func NewGinRouter(logger *zap.Logger, db *mongo.Database) (router *gin.Engine) {
 	{
 		profileGroup.POST("/save", profile.SaveProfileController(logger, db))
 		profileGroup.GET("/get", profile.GetProfileController(logger, db))
+	}
+
+	auctionGroup := api.Group("/auction")
+	{
+		auctionGroup.GET("/all", auction.GetAllAuctionsController(logger, db))
+
+		auctionGroup.POST("/get", auction.GetAuctionController(logger, db))
+
+		auctionGroup.POST("/create", auction.CreateAuctionController(logger, db))
+
+		auctionGroup.POST("/join", auction.JoinAuctionController(logger, db))
+
+		auctionGroup.PATCH("/update", auction.UpdateAuctionController(logger, db))
+
+		auctionGroup.PATCH("/team", auction.UpdateTeamController(logger, db))
+
+		auctionGroup.POST("/team/all", auction.GetAllTeamsController(logger, db))
+
+		auctionGroup.POST("/team", auction.CreateTeamController(logger, db))
+
+		auctionGroup.DELETE("/team", auction.DeleteTeamController(logger, db))
+	}
+
+	playersGroup := api.Group("/players")
+	{
+		playersGroup.POST("/get", players.GetAllPlayersController(logger, db))
+
+		playersGroup.POST("/save", players.SavePlayerController(logger, db))
+
+		playersGroup.PATCH("/update", players.UpdatePlayerController(logger, db))
+
+		playersGroup.DELETE("/delete", players.DeletePlayerController(logger, db))
+
+		playersGroup.POST("/squad", players.SquadsController(logger, db))
 	}
 
 	return router

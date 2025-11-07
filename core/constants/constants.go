@@ -11,5 +11,7 @@ var (
 	AuctionCollection = "auctions"
 	ProfileCollection = "profiles"
 	PlayerCollection  = "players"
+	TeamCollection    = "teams"
+	MatchCollection   = "matches"
 	OtpCollection     = "otps"
 )
