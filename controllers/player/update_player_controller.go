@@ -36,10 +36,10 @@ func UpdatePlayerController(logger *zap.Logger, db *mongo.Database) gin.HandlerF
 		player.UpdatedAt = time.Now()
 
 		filter := bson.M{"_id": player.Id}
-		replaceOptions := options.FindOneAndReplace().SetReturnDocument(options.After)
+		updateOptions := options.FindOneAndUpdate().SetReturnDocument(options.After)
 
 		var updatedPlayer models.Player
-		err := db.Collection(constants.PlayerCollection).FindOneAndReplace(ctx, filter, player, replaceOptions).Decode(&updatedPlayer)
+		err := db.Collection(constants.PlayerCollection).FindOneAndUpdate(ctx, filter, player, updateOptions).Decode(&updatedPlayer)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				c.JSON(http.StatusNotFound, gin.H{"error": "Player not found"})

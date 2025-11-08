@@ -76,6 +76,7 @@ func SavePlayerController(logger *zap.Logger, db *mongo.Database) gin.HandlerFun
 			player.CreatedAt = time.Now()
 			player.UpdatedAt = time.Now()
 			player.AuctionId = req.Auction_Id
+			player.Bids = []models.Bids{}
 			player.Id = primitive.NewObjectID()
 
 			// Save player to database
