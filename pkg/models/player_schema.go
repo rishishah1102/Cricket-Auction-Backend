@@ -7,8 +7,8 @@ import (
 )
 
 type Player struct {
-	Id                primitive.ObjectID `bson:"_id" json:"_id"`
-	AuctionId         primitive.ObjectID `bson:"auction_id" json:"auction_id" binding:"required"`
+	Id                primitive.ObjectID `bson:"_id" json:"id"`
+	AuctionId         primitive.ObjectID `bson:"auction_id" json:"auction_id"`
 	PlayerNumber      int                `bson:"player_number" json:"player_number" binding:"required"`
 	PlayerName        string             `bson:"player_name" json:"player_name" binding:"required"`
 	Country           string             `bson:"country,omitempty" json:"country,omitempty"`

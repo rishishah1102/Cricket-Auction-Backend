@@ -16,15 +16,16 @@ import (
 
 func SavePlayerController(logger *zap.Logger, db *mongo.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var (
-			players []models.Player
-			match   models.Match
-		)
+		var req struct {
+			Auction_Id primitive.ObjectID `json:"auction_id"`
+			Players    []models.Player    `json:"players"`
+		}
+		var match models.Match
 
 		ctx, cancel := context.WithTimeout(c.Request.Context(), constants.DBTimeout)
 		defer cancel()
 
-		if err := c.ShouldBindJSON(&players); err != nil {
+		if err := c.ShouldBindJSON(&req); err != nil {
 			logger.Error("failed to bind save player request", zap.Any(constants.Err, err))
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
@@ -36,7 +37,7 @@ func SavePlayerController(logger *zap.Logger, db *mongo.Database) gin.HandlerFun
 			return
 		}
 
-		for _, player := range players {
+		for _, player := range req.Players {
 			if isIPLAuction == "true" {
 				match = models.Match{
 					Id:                primitive.NewObjectID(),
@@ -74,6 +75,8 @@ func SavePlayerController(logger *zap.Logger, db *mongo.Database) gin.HandlerFun
 			player.SellingPrice = float64(0)
 			player.CreatedAt = time.Now()
 			player.UpdatedAt = time.Now()
+			player.AuctionId = req.Auction_Id
+			player.Id = primitive.NewObjectID()
 
 			// Save player to database
 			_, err := db.Collection(constants.PlayerCollection).InsertOne(ctx, player)
@@ -95,7 +98,7 @@ func SavePlayerController(logger *zap.Logger, db *mongo.Database) gin.HandlerFun
 
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Players saved successfully",
-			"players": len(players),
+			"players": len(req.Players),
 		})
 	}
 }
