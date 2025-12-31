@@ -5,6 +5,7 @@ import (
 	auction "cric-auction-monolith/controllers/auction"
 	profile "cric-auction-monolith/controllers/profile"
 	players "cric-auction-monolith/controllers/player"
+	bidding "cric-auction-monolith/controllers/bidding"
 	"cric-auction-monolith/pkg/middlewares"
 	"net/http"
 
@@ -77,6 +78,11 @@ func NewGinRouter(logger *zap.Logger, db *mongo.Database) (router *gin.Engine) {
 		playersGroup.DELETE("/delete", players.DeletePlayerController(logger, db))
 
 		playersGroup.POST("/squad", players.SquadsController(logger, db))
+	}
+
+	biddingGroup := api.Group("/bidding")
+	{
+		biddingGroup.POST("/teams/all", bidding.GetAllTeamsController(logger, db))
 	}
 
 	return router

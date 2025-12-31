@@ -14,4 +14,5 @@ var (
 	TeamCollection    = "teams"
 	MatchCollection   = "matches"
 	OtpCollection     = "otps"
+	TeamPurse         = 100.00
 )
