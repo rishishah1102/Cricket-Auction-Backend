@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 )
@@ -27,7 +28,7 @@ func GetAllTeamsController(logger *zap.Logger, db *mongo.Database) gin.HandlerFu
 	return func(c *gin.Context) {
 		var (
 			request struct {
-				AuctionID string `json:"auction_id"`
+				AuctionID primitive.ObjectID `json:"auction_id"`
 			}
 
 			teams []models.Team
@@ -93,7 +94,7 @@ func GetAllTeamsController(logger *zap.Logger, db *mongo.Database) gin.HandlerFu
 
 				purse -= player.SellingPrice
 			}
-			
+
 			teamResp[i] = response{
 				Team_Purse:    purse,
 				Batter:        batter,

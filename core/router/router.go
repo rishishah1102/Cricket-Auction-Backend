@@ -83,6 +83,7 @@ func NewGinRouter(logger *zap.Logger, db *mongo.Database) (router *gin.Engine) {
 	biddingGroup := api.Group("/bidding")
 	{
 		biddingGroup.POST("/teams/all", bidding.GetAllTeamsController(logger, db))
+		biddingGroup.POST("/player/fetch", bidding.FetchPlayerController(logger, db))
 	}
 
 	return router
