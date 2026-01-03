@@ -13,7 +13,7 @@ func CORSMiddleware(c *gin.Context) {
 		"http://localhost:3000",
 		"http://127.0.0.1:3000",
 		"http://192.168.29.239:3000",
-		// TODO
+		"https://cric-auction-frontend.vercel.app",
 	}
 
 	for _, o := range allowedOrigins {
