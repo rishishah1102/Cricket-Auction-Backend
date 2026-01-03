@@ -35,7 +35,7 @@ func init() {
 	if err != nil {
 		logger.Error("failed to create mongo client", zap.Any(constants.Err, err))
 	}
-	db := client.Database("test")
+	db := client.Database("auction")
 
 	router := router.NewGinRouter(logger, db)
 	Router = router
