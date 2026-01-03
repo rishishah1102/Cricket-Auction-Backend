@@ -20,13 +20,7 @@ type Player struct {
 	SellingPrice      float64            `bson:"selling_price" json:"selling_price"`
 	IPLTeam           string             `bson:"ipl_team,omitempty" json:"ipl_team,omitempty"`
 	PrevFantasyPoints int                `bson:"prev_fantasy_points,omitempty" json:"prev_fantasy_points,omitempty"`
-	Bids              []Bids             `bson:"bids" json:"bids"`
 	Match             primitive.ObjectID `bson:"match,omitempty" json:"match,omitempty"`
 	CreatedAt         time.Time          `bson:"created_at" json:"created_at"`
 	UpdatedAt         time.Time          `bson:"updated_at" json:"updated_at"`
-}
-
-type Bids struct {
-	TeamName string  `bson:"team_name" json:"team_name"`
-	Bid      float64 `bson:"bid" json:"bid"`
 }

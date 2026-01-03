@@ -97,7 +97,6 @@ func batchInsertPlayers(ctx context.Context, logger *zap.Logger, db *mongo.Datab
 		player.CurrentTeam = ""
 		player.Hammer = "upcoming"
 		player.SellingPrice = 0
-		player.Bids = []models.Bids{}
 
 		if len(player.PrevTeam) == 0 {
 			player.PrevTeam = ""

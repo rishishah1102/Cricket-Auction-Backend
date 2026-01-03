@@ -84,12 +84,6 @@ func updatePlayerWithTeam(ctx context.Context, db *mongo.Database, player models
 			return err
 		}
 
-		// Update player with bid info
-		player.Bids = []models.Bids{{
-			TeamName: player.CurrentTeam,
-			Bid:      player.SellingPrice,
-		}}
-
 		if err := updatePlayer(sc, db, player); err != nil {
 			session.AbortTransaction(sc)
 			return err

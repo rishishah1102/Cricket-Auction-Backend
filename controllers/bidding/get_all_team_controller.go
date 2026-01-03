@@ -14,14 +14,15 @@ import (
 )
 
 type response struct {
-	Team_Purse    float64 `json:"team_purse"`
-	Batter        int     `json:"batter"`
-	Bowler        int     `json:"bowler"`
-	All_Rounder   int     `json:"all_rounder"`
-	Wicket_Keeper int     `json:"wicket_keeper"`
-	Overseas      int     `json:"overseas"`
-	Team_Name     string  `json:"team_name"`
-	Team_Image    string  `json:"team_image"`
+	Team_ID       primitive.ObjectID `json:"team_id"`
+	Team_Purse    float64            `json:"team_purse"`
+	Batter        int                `json:"batter"`
+	Bowler        int                `json:"bowler"`
+	All_Rounder   int                `json:"all_rounder"`
+	Wicket_Keeper int                `json:"wicket_keeper"`
+	Overseas      int                `json:"overseas"`
+	Team_Name     string             `json:"team_name"`
+	Team_Image    string             `json:"team_image"`
 }
 
 func GetAllTeamsController(logger *zap.Logger, db *mongo.Database) gin.HandlerFunc {
@@ -96,6 +97,7 @@ func GetAllTeamsController(logger *zap.Logger, db *mongo.Database) gin.HandlerFu
 			}
 
 			teamResp[i] = response{
+				Team_ID:       team.ID,
 				Team_Purse:    purse,
 				Batter:        batter,
 				Bowler:        bowler,
