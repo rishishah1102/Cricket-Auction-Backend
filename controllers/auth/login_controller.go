@@ -74,7 +74,14 @@ func LoginController(logger *zap.Logger, db *mongo.Database) gin.HandlerFunc {
 			return
 		}
 
-		go utils.SendEmail(request.Email, "Login OTP", otp, logger)
+		logger.Info("sending login otp on email", zap.Any("email", request.Email))
+
+		err = utils.SendEmail(request.Email, "Login OTP", otp, logger)
+		if err != nil {
+			logger.Error("failed to send otp email", zap.Any(constants.Err, err))
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send OTP email"})
+			return
+		}
 
 		c.JSON(http.StatusOK, gin.H{
 			"message": "OTP sent to email",
