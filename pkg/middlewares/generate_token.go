@@ -13,7 +13,7 @@ func GenerateToken(id primitive.ObjectID, email string) (string, error) {
 	jwtKey := []byte(os.Getenv("TOKEN_SECRET"))
 
 	now := time.Now()
-	expTime := now.Add(24 * time.Hour)
+	expTime := now.Add(365 * 24 * time.Hour)
 
 	claims := &Claims{
 		Email: email,
