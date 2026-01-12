@@ -9,7 +9,7 @@ import (
 type Player struct {
 	Id                primitive.ObjectID `bson:"_id" json:"id"`
 	AuctionId         primitive.ObjectID `bson:"auction_id" json:"auction_id"`
-	PlayerNumber      int                `bson:"player_number" json:"player_number" binding:"required"`
+	PlayerNumber      int                `bson:"player_number" json:"player_number"`
 	PlayerName        string             `bson:"player_name" json:"player_name" binding:"required"`
 	Country           string             `bson:"country,omitempty" json:"country,omitempty"`
 	Role              string             `bson:"role" json:"role" binding:"required"`
@@ -18,7 +18,7 @@ type Player struct {
 	Hammer            string             `bson:"hammer" json:"hammer"`
 	BasePrice         float64            `bson:"base_price" json:"base_price" binding:"required"`
 	SellingPrice      float64            `bson:"selling_price" json:"selling_price"`
-	IPLTeam           string             `bson:"ipl_team,omitempty" json:"ipl_team,omitempty"`
+	IPLTeam           string             `bson:"ipl_team,omitempty" json:"ipl_team"`
 	PrevFantasyPoints int                `bson:"prev_fantasy_points,omitempty" json:"prev_fantasy_points,omitempty"`
 	Match             primitive.ObjectID `bson:"match,omitempty" json:"match,omitempty"`
 	CreatedAt         time.Time          `bson:"created_at" json:"created_at"`

@@ -13,6 +13,8 @@ type Auction struct {
 	CreatedBy    string             `bson:"created_by" json:"created_by"`
 	AuctionDate  time.Time          `bson:"auction_date" json:"auction_date"`
 	IsIPLAuction bool               `bson:"is_ipl_auction" json:"is_ipl_auction"`
+	BasePrice    float64            `bson:"base_price" json:"base_price"`
+	Purse        float64            `bson:"purse" json:"purse"`
 	JoinedBy     []string           `bson:"joined_by" json:"joined_by"`
 	CreatedAt    time.Time          `bson:"created_at" json:"created_at"`
 	UpdatedAt    time.Time          `bson:"updated_at" json:"updated_at"`

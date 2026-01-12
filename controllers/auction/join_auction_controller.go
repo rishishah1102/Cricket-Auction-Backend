@@ -6,6 +6,7 @@ import (
 	"cric-auction-monolith/pkg/models"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -80,6 +81,33 @@ func JoinAuctionController(logger *zap.Logger, db *mongo.Database) gin.HandlerFu
 			logger.Error("failed to join auction", zap.Any(constants.Err, err))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error from db"})
 			return
+		}
+
+		if !response.IsIPLAuction {
+			// Adding to players
+			var user models.User
+			err = db.Collection(constants.UserCollection).FindOne(ctx, bson.M{"email": email}).Decode(&user)
+			if err != nil {
+				logger.Error("failed to fetch user details", zap.Any(constants.Err, err))
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+				return
+			}
+
+			// Add user to players collection
+			player := models.Player{
+				AuctionId:  request.AuctionID,
+				PlayerName: user.FirstName + " " + user.LastName,
+				Role:       user.Role,
+				BasePrice:  response.BasePrice,
+				CreatedAt:  time.Now(),
+				UpdatedAt:  time.Now(),
+			}
+			_, err = db.Collection(constants.PlayerCollection).InsertOne(ctx, player)
+			if err != nil {
+				logger.Error("failed to add user to players collection", zap.Any(constants.Err, err))
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add user to players collection"})
+				return
+			}
 		}
 
 		c.JSON(http.StatusOK, gin.H{
