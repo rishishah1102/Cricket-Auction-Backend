@@ -78,6 +78,10 @@ func NewGinRouter(logger *zap.Logger, db *mongo.Database) (router *gin.Engine) {
 		playersGroup.DELETE("/delete", players.DeletePlayerController(logger, db))
 
 		playersGroup.POST("/squad", players.SquadsController(logger, db))
+
+		playersGroup.POST("/eleven/get", players.GetElevenController(logger, db))
+		
+		playersGroup.POST("/eleven/save", players.SaveElevenController(logger, db))
 	}
 
 	biddingGroup := api.Group("/bidding")
