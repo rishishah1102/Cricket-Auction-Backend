@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"cric-auction-monolith/core/constants"
+	"cric-auction-monolith/pkg/models"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -19,6 +20,7 @@ func SaveElevenController(logger *zap.Logger, db *mongo.Database) gin.HandlerFun
 		}
 
 		if err := c.ShouldBindJSON(&req); err != nil {
+			logger.Error("failed to bind request", zap.Error(err))
 			c.JSON(400, gin.H{"error": "Exactly 11 player IDs required"})
 			return
 		}
@@ -40,11 +42,14 @@ func SaveElevenController(logger *zap.Logger, db *mongo.Database) gin.HandlerFun
 
 		matchIDs := make([]primitive.ObjectID, 0, 11)
 		for cursor.Next(ctx) {
-			var p struct {
-				Match primitive.ObjectID `bson:"match"`
+			var player models.Player
+			if err := cursor.Decode(&player); err != nil {
+				logger.Error("failed to decode player", zap.Error(err))
+				c.JSON(500, gin.H{"error": "Failed to decode player"})
+				return
 			}
-			if p.Match != primitive.NilObjectID {
-				matchIDs = append(matchIDs, p.Match)
+			if player.Match != primitive.NilObjectID {
+				matchIDs = append(matchIDs, player.Match)
 			}
 		}
 
