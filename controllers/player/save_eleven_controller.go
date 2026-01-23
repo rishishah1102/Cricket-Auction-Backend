@@ -4,6 +4,7 @@ import (
 	"context"
 	"cric-auction-monolith/core/constants"
 	"cric-auction-monolith/pkg/models"
+	"slices"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -16,6 +17,7 @@ import (
 func SaveElevenController(logger *zap.Logger, db *mongo.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req struct {
+			SquadIDs  []primitive.ObjectID `json:"squad" binding:"required"`
 			PlayerIDs []primitive.ObjectID `json:"player_ids" binding:"required"`
 		}
 
@@ -30,7 +32,7 @@ func SaveElevenController(logger *zap.Logger, db *mongo.Database) gin.HandlerFun
 
 		cursor, err := db.Collection(constants.PlayerCollection).Find(
 			ctx,
-			bson.M{"_id": bson.M{"$in": req.PlayerIDs}},
+			bson.M{"_id": bson.M{"$in": req.SquadIDs}},
 			options.Find().SetProjection(bson.M{"match": 1}),
 		)
 		if err != nil {
@@ -40,7 +42,8 @@ func SaveElevenController(logger *zap.Logger, db *mongo.Database) gin.HandlerFun
 		}
 		defer cursor.Close(ctx)
 
-		matchIDs := make([]primitive.ObjectID, 0, 11)
+		playing11MatchIDs := make([]primitive.ObjectID, 0, 11)
+		nonPlaying11MatchIDs := make([]primitive.ObjectID, len(req.SquadIDs)-11)
 		for cursor.Next(ctx) {
 			var player models.Player
 			if err := cursor.Decode(&player); err != nil {
@@ -48,25 +51,38 @@ func SaveElevenController(logger *zap.Logger, db *mongo.Database) gin.HandlerFun
 				c.JSON(500, gin.H{"error": "Failed to decode player"})
 				return
 			}
-			if player.Match != primitive.NilObjectID {
-				matchIDs = append(matchIDs, player.Match)
+			if slices.Contains(req.PlayerIDs, player.Id) {
+				playing11MatchIDs = append(playing11MatchIDs, player.Match)
+			} else {
+				nonPlaying11MatchIDs = append(nonPlaying11MatchIDs, player.Match)
 			}
 		}
 
 		_, err = db.Collection(constants.MatchCollection).UpdateMany(
 			ctx,
-			bson.M{"_id": bson.M{"$in": matchIDs}},
-			bson.M{"$set": bson.M{"currentX1": true}},
+			bson.M{"_id": bson.M{"$in": playing11MatchIDs}},
+			bson.M{"$set": bson.M{"nextX1": true}},
 		)
 		if err != nil {
-			logger.Error("match update failed", zap.Error(err))
-			c.JSON(500, gin.H{"error": "Failed to save XI"})
+			logger.Error("failed to update playing 11", zap.Error(err))
+			c.JSON(500, gin.H{"error": "Failed to save playing XI"})
+			return
+		}
+
+		_, err = db.Collection(constants.MatchCollection).UpdateMany(
+			ctx,
+			bson.M{"_id": bson.M{"$in": nonPlaying11MatchIDs}},
+			bson.M{"$set": bson.M{"nextX1": false}},
+		)
+		if err != nil {
+			logger.Error("failed to update non-playing 11", zap.Error(err))
+			c.JSON(500, gin.H{"error": "Failed to save non playing XI"})
 			return
 		}
 
 		c.JSON(200, gin.H{
 			"message": "Playing XI saved",
-			"count":   len(matchIDs),
+			"count":   len(playing11MatchIDs),
 		})
 	}
 }
