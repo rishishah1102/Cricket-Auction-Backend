@@ -3,9 +3,10 @@ package router
 import (
 	auth "cric-auction-monolith/controllers/auth"
 	auction "cric-auction-monolith/controllers/auction"
-	profile "cric-auction-monolith/controllers/profile"
-	players "cric-auction-monolith/controllers/player"
 	bidding "cric-auction-monolith/controllers/bidding"
+	players "cric-auction-monolith/controllers/player"
+	pointsTable "cric-auction-monolith/controllers/pointsTable"
+	profile "cric-auction-monolith/controllers/profile"
 	"cric-auction-monolith/pkg/middlewares"
 	"net/http"
 
@@ -80,8 +81,19 @@ func NewGinRouter(logger *zap.Logger, db *mongo.Database) (router *gin.Engine) {
 		playersGroup.POST("/squad", players.SquadsController(logger, db))
 
 		playersGroup.POST("/eleven/get", players.GetElevenController(logger, db))
-		
+
 		playersGroup.POST("/eleven/save", players.SaveElevenController(logger, db))
+	}
+
+	pointsTableGroup := api.Group("/points-table")
+	{
+		pointsTableGroup.POST("/ipl-teams", pointsTable.GetIPLTeamsController(logger, db))
+		pointsTableGroup.POST("/match-players", pointsTable.GetMatchPlayersController(logger, db))
+		pointsTableGroup.PATCH("/match-points", pointsTable.UpdateMatchPointsController(logger, db))
+		pointsTableGroup.POST("/leaderboard", pointsTable.GetLeaderboardController(logger, db))
+		pointsTableGroup.POST("/scoreboard", pointsTable.GetScoreboardController(logger, db))
+		pointsTableGroup.POST("/change-xi", pointsTable.ChangeXIController(logger, db))
+		pointsTableGroup.POST("/team-details", pointsTable.GetTeamDetailsController(logger, db))
 	}
 
 	biddingGroup := api.Group("/bidding")
