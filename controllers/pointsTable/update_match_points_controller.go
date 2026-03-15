@@ -4,7 +4,6 @@ import (
 	"context"
 	"cric-auction-monolith/core/constants"
 	"net/http"
-	"sync"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -64,65 +63,59 @@ func UpdateMatchPointsController(logger *zap.Logger, db *mongo.Database) gin.Han
 		mCursor.All(ctx, &docs)
 		mCursor.Close(ctx)
 
-		// Build lookup map
-		docMap := make(map[primitive.ObjectID]matchDoc, len(docs))
-		for _, d := range docs {
-			docMap[d.ID] = d
-		}
-
 		// Build points lookup from request
 		pointsReq := make(map[primitive.ObjectID]int, len(request.Updates))
 		for _, u := range request.Updates {
 			pointsReq[u.MatchID] = u.Points
 		}
 
-		// 3. Update all in parallel
-		var wg sync.WaitGroup
+		// 3. Build bulk write operations (single DB round-trip, no goroutines)
+		ops := make([]mongo.WriteModel, 0, len(docs))
 		for _, d := range docs {
-			wg.Add(1)
-			go func(d matchDoc) {
-				defer wg.Done()
+			newPoints := pointsReq[d.ID]
 
-				newPoints := pointsReq[d.ID]
+			// Extend array if needed
+			matches := make([]int, len(d.Matches))
+			copy(matches, d.Matches)
+			for len(matches) <= request.MatchIndex {
+				matches = append(matches, 0)
+			}
+			matches[request.MatchIndex] = newPoints
 
-				// Extend array if needed
-				matches := make([]int, len(d.Matches))
-				copy(matches, d.Matches)
-				for len(matches) <= request.MatchIndex {
-					matches = append(matches, 0)
-				}
-				matches[request.MatchIndex] = newPoints
+			weekTotal := 0
+			for _, p := range matches {
+				weekTotal += p
+			}
 
-				weekTotal := 0
-				for _, p := range matches {
-					weekTotal += p
-				}
+			// Cumulative: prev + this week's match points
+			earned := d.PrevEarnedPoints
+			benched := d.PrevBenchedPoints
+			if d.CurrentX1 {
+				earned += weekTotal
+			} else {
+				benched += weekTotal
+			}
+			total := earned + benched
 
-				// Cumulative: prev + this week's match points
-				earned := d.PrevEarnedPoints
-				benched := d.PrevBenchedPoints
-				if d.CurrentX1 {
-					earned += weekTotal
-				} else {
-					benched += weekTotal
-				}
-				total := earned + benched
-
-				_, err := db.Collection(constants.MatchCollection).UpdateOne(ctx,
-					bson.M{"_id": d.ID},
-					bson.M{"$set": bson.M{
-						"matches":       matches,
-						"totalPoints":   total,
-						"earnedPoints":  earned,
-						"benchedPoints": benched,
-					}},
-				)
-				if err != nil {
-					logger.Error("failed to update match", zap.Any("id", d.ID), zap.Error(err))
-				}
-			}(d)
+			op := mongo.NewUpdateOneModel().
+				SetFilter(bson.M{"_id": d.ID}).
+				SetUpdate(bson.M{"$set": bson.M{
+					"matches":       matches,
+					"totalPoints":   total,
+					"earnedPoints":  earned,
+					"benchedPoints": benched,
+				}})
+			ops = append(ops, op)
 		}
-		wg.Wait()
+
+		if len(ops) > 0 {
+			_, err := db.Collection(constants.MatchCollection).BulkWrite(ctx, ops)
+			if err != nil {
+				logger.Error("bulk update failed", zap.Error(err))
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save points"})
+				return
+			}
+		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "Points updated successfully"})
 	}
