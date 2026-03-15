@@ -4,6 +4,7 @@ import (
 	"context"
 	"cric-auction-monolith/core/constants"
 	"cric-auction-monolith/pkg/models"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,6 +30,11 @@ func GetProfileController(logger *zap.Logger, db *mongo.Database) gin.HandlerFun
 
 		err := db.Collection(constants.UserCollection).FindOne(ctx, bson.M{"email": email}).Decode(&user)
 		if err != nil {
+			if errors.Is(err, mongo.ErrNoDocuments) {
+				logger.Warn("user profile not found", zap.String("email", email))
+				c.JSON(http.StatusNotFound, gin.H{"error": "Profile not found"})
+				return
+			}
 			logger.Error("failed to fetch user profile", zap.Any(constants.Err, err))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server error from database"})
 			return

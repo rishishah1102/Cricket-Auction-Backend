@@ -23,7 +23,17 @@ func SaveElevenController(logger *zap.Logger, db *mongo.Database) gin.HandlerFun
 
 		if err := c.ShouldBindJSON(&req); err != nil {
 			logger.Error("failed to bind request", zap.Error(err))
+			c.JSON(400, gin.H{"error": "Invalid request payload"})
+			return
+		}
+
+		if len(req.PlayerIDs) != 11 {
 			c.JSON(400, gin.H{"error": "Exactly 11 player IDs required"})
+			return
+		}
+
+		if len(req.SquadIDs) < 11 {
+			c.JSON(400, gin.H{"error": "Squad must have at least 11 players"})
 			return
 		}
 
@@ -43,7 +53,7 @@ func SaveElevenController(logger *zap.Logger, db *mongo.Database) gin.HandlerFun
 		defer cursor.Close(ctx)
 
 		playing11MatchIDs := make([]primitive.ObjectID, 0, 11)
-		nonPlaying11MatchIDs := make([]primitive.ObjectID, len(req.SquadIDs)-11)
+		nonPlaying11MatchIDs := make([]primitive.ObjectID, 0, len(req.SquadIDs)-11)
 		for cursor.Next(ctx) {
 			var player models.Player
 			if err := cursor.Decode(&player); err != nil {

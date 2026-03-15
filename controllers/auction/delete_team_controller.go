@@ -37,15 +37,16 @@ func DeleteTeamController(logger *zap.Logger, db *mongo.Database) gin.HandlerFun
 			"auction_id": request.AuctionID,
 		}
 
-		_, err := db.Collection(constants.TeamCollection).DeleteOne(ctx, filter)
+		result, err := db.Collection(constants.TeamCollection).DeleteOne(ctx, filter)
 		if err != nil {
-			if err == mongo.ErrNoDocuments {
-				logger.Warn("no team found for delete", zap.Any(constants.Err, err))
-				c.JSON(http.StatusNotFound, gin.H{"error": "Team not found or you are not authorized to delete it"})
-				return
-			}
 			logger.Error("failed to delete team in database", zap.Any(constants.Err, err))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete team"})
+			return
+		}
+
+		if result.DeletedCount == 0 {
+			logger.Warn("no team found for delete")
+			c.JSON(http.StatusNotFound, gin.H{"error": "Team not found or you are not authorized to delete it"})
 			return
 		}
 

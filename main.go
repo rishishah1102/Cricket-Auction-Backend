@@ -21,7 +21,7 @@ func main() {
 
 	client, err := database.NewMongoClient(ctx, cfg.MongoURI, logger)
 	if err != nil {
-		logger.Error("failed to create mongo client", zap.Any(constants.Err, err))
+		logger.Fatal("failed to create mongo client", zap.Any(constants.Err, err))
 	}
 	defer database.DisconnectMongoClient(ctx, client, logger)
 	db := client.Database(cfg.DbName)

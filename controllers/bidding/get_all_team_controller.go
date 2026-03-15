@@ -76,6 +76,7 @@ func GetAllTeamsController(logger *zap.Logger, db *mongo.Database) gin.HandlerFu
 				err := db.Collection(constants.PlayerCollection).FindOne(ctx, bson.M{"_id": player_id}).Decode(&player)
 				if err != nil {
 					logger.Error("failed to fetch player", zap.Any(constants.Err, err))
+					continue
 				}
 
 				switch player.Role {

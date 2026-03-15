@@ -56,7 +56,10 @@ func RegisterOtpController(logger *zap.Logger, db *mongo.Database) gin.HandlerFu
 			return
 		}
 
-		go db.Collection(constants.OtpCollection).DeleteOne(ctx, bson.M{"email": request.Email})
+		// Delete OTP synchronously to ensure cleanup before proceeding
+		if _, err := db.Collection(constants.OtpCollection).DeleteOne(ctx, bson.M{"email": request.Email}); err != nil {
+			logger.Warn("failed to delete OTP after verification", zap.Any(constants.Err, err))
+		}
 
 		// Save user in db
 		insertedUserId, err := db.Collection(constants.UserCollection).InsertOne(ctx, bson.M{

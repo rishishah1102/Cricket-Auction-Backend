@@ -62,6 +62,10 @@ func LoginOtpController(logger *zap.Logger, db *mongo.Database) gin.HandlerFunc 
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Decode error"})
 				return
 			}
+		} else {
+			logger.Error("no OTP or user found for email", zap.String("email", request.Email))
+			c.JSON(http.StatusNotFound, gin.H{"error": "OTP not found or user does not exist"})
+			return
 		}
 
 		if request.OTP != result.Otp.Otp {

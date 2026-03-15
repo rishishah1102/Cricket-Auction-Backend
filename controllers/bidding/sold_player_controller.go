@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"cric-auction-monolith/core/constants"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -68,9 +69,13 @@ func markPlayerAsSold(ctx context.Context, db *mongo.Database, req soldPlayerReq
 			bson.M{"_id": req.PlayerID, "auction_id": req.AuctionID},
 			playerUpdate)
 
-		if err != nil || result.MatchedCount == 0 {
+		if err != nil {
 			session.AbortTransaction(sc)
 			return err
+		}
+		if result.MatchedCount == 0 {
+			session.AbortTransaction(sc)
+			return fmt.Errorf("player not found with id %s in auction %s", req.PlayerID.Hex(), req.AuctionID.Hex())
 		}
 
 		// Add player to team squad

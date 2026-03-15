@@ -52,7 +52,13 @@ func CreateAuctionController(logger *zap.Logger, db *mongo.Database) gin.Handler
 			return
 		}
 
-		request.ID = res.InsertedID.(primitive.ObjectID)
+		id, ok := res.InsertedID.(primitive.ObjectID)
+		if !ok {
+			logger.Error("failed to convert inserted ID to ObjectID")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process auction ID"})
+			return
+		}
+		request.ID = id
 
 		c.JSON(http.StatusCreated, gin.H{
 			"message": "Auction created successfully",
