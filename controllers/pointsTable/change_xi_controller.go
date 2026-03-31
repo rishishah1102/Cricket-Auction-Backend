@@ -72,7 +72,7 @@ func ChangeXIController(logger *zap.Logger, db *mongo.Database) gin.HandlerFunc 
 				{Key: "prevTotalPoints",   Value: "$totalPoints"},
 				{Key: "prevX1",            Value: "$currentX1"},
 				{Key: "currentX1",         Value: "$nextX1"},
-				{Key: "nextX1",            Value: false},
+				{Key: "nextX1",            Value: "$nextX1"},
 				{Key: "matches",           Value: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 			}}},
 		}
