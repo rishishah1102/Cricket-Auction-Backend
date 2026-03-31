@@ -94,6 +94,10 @@ func NewGinRouter(logger *zap.Logger, db *mongo.Database) (router *gin.Engine) {
 		pointsTableGroup.POST("/scoreboard", pointsTable.GetScoreboardController(logger, db))
 		pointsTableGroup.POST("/change-xi", pointsTable.ChangeXIController(logger, db))
 		pointsTableGroup.POST("/team-details", pointsTable.GetTeamDetailsController(logger, db))
+		pointsTableGroup.POST("/rollback-xi", pointsTable.RollbackXIController(logger, db))
+		pointsTableGroup.POST("/reset-points", pointsTable.ResetPointsController(logger, db))
+		pointsTableGroup.GET("/cricbuzz/matches", pointsTable.CricbuzzMatchesController(logger, db))
+		pointsTableGroup.POST("/cricbuzz/calculate-points", pointsTable.CricbuzzPointsController(logger, db))
 	}
 
 	biddingGroup := api.Group("/bidding")
