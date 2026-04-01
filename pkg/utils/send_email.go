@@ -4,22 +4,13 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 
 	"go.uber.org/zap"
 	"gopkg.in/gomail.v2"
 )
 
 func buildOTPEmailHTML(subject string, otp int) string {
-	// Split OTP into individual digits for the digit-box design
 	otpStr := fmt.Sprintf("%d", otp)
-	var sb strings.Builder
-	for _, ch := range otpStr {
-		fmt.Fprintf(&sb,
-			`<td style="width:48px;height:56px;background-color:#f0f4ff;border:2px solid #3b82f6;border-radius:10px;text-align:center;vertical-align:middle;font-size:28px;font-weight:700;color:#0d2249;font-family:'Segoe UI',Roboto,Arial,sans-serif;letter-spacing:0;">%c</td>
-			<td style="width:6px;"></td>`, ch)
-	}
-	digitBoxes := sb.String()
 
 	purposeText := "log in to"
 	if subject == "Registration OTP" {
@@ -65,10 +56,12 @@ func buildOTPEmailHTML(subject string, otp int) string {
         Do not share this code with anyone.
       </p>
 
-      <!-- OTP Digits -->
+      <!-- OTP Code -->
       <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
         <tr>
-          %s
+          <td style="background-color:#f0f4ff;border:2px solid #3b82f6;border-radius:12px;padding:16px 36px;text-align:center;">
+            <span style="font-size:34px;font-weight:800;color:#0d2249;letter-spacing:14px;font-family:'Segoe UI',Roboto,monospace;">%s</span>
+          </td>
         </tr>
       </table>
 
@@ -117,7 +110,7 @@ func buildOTPEmailHTML(subject string, otp int) string {
 </td></tr>
 </table>
 </body>
-</html>`, purposeText, digitBoxes)
+</html>`, purposeText, otpStr)
 }
 
 // SendEmail sends an OTP email to the recipient
